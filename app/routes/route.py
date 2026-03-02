@@ -45,7 +45,7 @@ def route_proxy(request: Route, db: Session = Depends(get_db)):
 
     query = select(ResidentialProxy).where(
         ResidentialProxy.residential_proxy_supported_protocol == protocol
-        )
+        ).order_by(func.random()) # Added random here so it applies to all requests. Means two requests with the same city or country can get different proxies (if they exist)
     
     # 3. Work our way through the routing logic
 
@@ -75,10 +75,10 @@ def route_proxy(request: Route, db: Session = Depends(get_db)):
                 }
             )
     
-    # 3.3 No country or city given
+    # 3.3 No country or city given --> This does assume that a protocol is always specified.
 
     if not proxy and not country:
-        proxy = db.exec(query.order_by(func.random())).first()
+        proxy = db.exec(query).first()
 
     # 3.4 No proxies for the specified protocol
     
