@@ -21,6 +21,7 @@ services:
       - DB_USER=${POSTGRES_USER}
       - DB_PASSWORD=${POSTGRES_PASSWORD}
       - DB_NAME=${POSTGRES_DB}
+      - POSTGRES_PORT=${POSTGRES_PORT}
     depends_on:
       - postgres
 
