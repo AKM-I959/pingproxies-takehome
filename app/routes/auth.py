@@ -123,21 +123,19 @@ def auth_user(request: User, db: Session = Depends(get_db)):
     
     #4. If it passes the checks then send the formatted context
 
-    bandwidth = float(user.proxy_user_available_bandwidth)
-
     return JSONResponse(
         status_code=200,
         content={
             "context": {
                 "auth_service": {
                     "proxy_user_id": user.proxy_user_id,
-                    "available_bandwidth": bandwidth,
+                    "available_bandwidth": user.proxy_user_available_bandwidth,
                     "residential_params": {
                         "country": country,
                         "city": city
                     }
                 }
             },
-            "available_bandwidth": bandwidth
+            "available_bandwidth": user.proxy_user_available_bandwidth
         }
     )
