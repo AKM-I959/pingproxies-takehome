@@ -29,6 +29,9 @@ class ResidentialProxy(SQLModel, table=True):
 #  4.  If no routing parameters specified, select a random proxy
 #  5.  All results need to support the chosen protocol -> Check this first
 
+#TODO replace Route model with multiple nested models that better represent the nested JSON it expects. Currently this would allow
+# pretty much any JSON.
+
 @router.post("/route")
 def route_proxy(request: Route, db: Session = Depends(get_db)):
 
