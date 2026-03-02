@@ -25,4 +25,3 @@ I also used some postman requests to automatically send both valid and invalid i
 4. Move the models from the endpoints into their own seperate files as they are unlikely to change often.
 5. Add examples to the models so the generated docs are more useful: https://fastapi.tiangolo.com/tutorial/schema-extra-example/
 6. Potentially change the database pooling parameters: https://deepwiki.com/fastapi/sqlmodel/2.5-engine-and-database-connection#sqlmodel-vs-sqlalchemy-engine
-

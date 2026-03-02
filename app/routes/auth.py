@@ -19,7 +19,7 @@ class ResidentialProxyUser(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     proxy_user_id: str = Field(unique=True, index=True)
     proxy_user_password: str
-    proxy_user_available_bandwidth: Decimal
+    proxy_user_available_bandwidth: float
 
 @router.post("/auth")
 def auth_user(request: User, db: Session = Depends(get_db)):
@@ -28,7 +28,7 @@ def auth_user(request: User, db: Session = Depends(get_db)):
 
     userParts = request.username.split("_")
     #Username is always either 6 or 7 parts (depending on city e.g. new_york vs london)
-    if len(userParts) < 6:
+    if len(userParts) < 6 or len(userParts) > 7:
         return JSONResponse(
             status_code=401,
             content={"internal_error_code": 1003, "error_message": "invalid username"}
