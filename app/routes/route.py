@@ -30,7 +30,7 @@ class ResidentialProxy(SQLModel, table=True):
 #  5.  All results need to support the chosen protocol -> Check this first
 
 #TODO replace Route model with multiple nested models that better represent the nested JSON it expects. Currently this would allow
-# pretty much any JSON.
+# pretty much any JSON. In its current state it will throw an error 442. Also would then provide better docs.
 
 @router.post("/route")
 def route_proxy(request: Route, db: Session = Depends(get_db)):

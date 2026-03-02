@@ -26,4 +26,4 @@ I also used some postman requests to automatically send both valid and invalid i
 5. Add examples to the models so the generated docs are more useful: https://fastapi.tiangolo.com/tutorial/schema-extra-example/
 6. Potentially change the database pooling parameters: https://deepwiki.com/fastapi/sqlmodel/2.5-engine-and-database-connection#sqlmodel-vs-sqlalchemy-engine
 7. Use models for the response too so the generated docs are better.
-8. Rework existing models to use nested models which provides improved validation -> especially within the route models.
+8. Rework existing models to use nested models which provides improved validation -> especially within the route models: https://fastapi.tiangolo.com/tutorial/body-nested-models/#nested-models
