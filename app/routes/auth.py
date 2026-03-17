@@ -1,28 +1,28 @@
 from fastapi import APIRouter, HTTPException, Depends
 from fastapi.responses import JSONResponse
-from pydantic import BaseModel
-from sqlmodel import Session, SQLModel, Field, select
-from typing import Optional
-from decimal import Decimal
+from sqlmodel import Session,select
 from database import get_db
+from models import (
+    AuthRequest,
+    AuthResponse,
+    ResidentialProxyUser,
+    FullContext,
+    AuthServiceContext,
+    ResidentialParams,
+    ErrorResponse,
+)
 
-router = APIRouter()
+router = APIRouter() 
 
-#Models to easily parse any requests or the database.
-
-class User(BaseModel):
-    username: str
-    password: str
-
-class ResidentialProxyUser(SQLModel, table=True):
-    __tablename__ = "residential_proxy_user"
-    id: Optional[int] = Field(default=None, primary_key=True)
-    proxy_user_id: str = Field(unique=True, index=True)
-    proxy_user_password: str
-    proxy_user_available_bandwidth: float
-
-@router.post("/auth")
-def auth_user(request: User, db: Session = Depends(get_db)):
+@router.post(
+        "/auth",
+        response_model=AuthResponse,
+        response_model_exclude_none=True,
+        responses={
+            400: {"model": ErrorResponse},
+            401: {"model": ErrorResponse}
+        })
+def auth_user(request: AuthRequest, db: Session = Depends(get_db)):
 
     #1. Parse request
 
@@ -43,9 +43,10 @@ def auth_user(request: User, db: Session = Depends(get_db)):
     if len(userParts) < 2:
         return JSONResponse(
             status_code=400, 
-            content={
-                "internal_error_code": 1007,
-                "error_message": "Invalid username."}
+            content=ErrorResponse(
+                internal_error_code=1007,
+                error_message="Invalid username."
+            ).model_dump()
         )
 
     name = f"{userParts[0]}_{userParts[1]}"
@@ -62,16 +63,18 @@ def auth_user(request: User, db: Session = Depends(get_db)):
             if userParts[i+1] == "c":
                 return JSONResponse(
                     status_code=400, 
-                    content={
-                        "internal_error_code": 1006,
-                        "error_message": "Invalid username."}
+                    content=ErrorResponse(
+                        internal_error_code=1006,
+                        error_message="Invalid username."
+                    ).model_dump()
                 )
             if userParts[i+1] == "city":
                 return JSONResponse(
                     status_code=400, 
-                    content={
-                        "internal_error_code": 1005,
-                        "error_message": "Invalid username."}
+                    content=ErrorResponse(
+                        internal_error_code=1005,
+                        error_message="Invalid username."
+                    ).model_dump()
                 )
             country = userParts[i+1]
 
@@ -80,17 +83,19 @@ def auth_user(request: User, db: Session = Depends(get_db)):
                 if userParts[j] == "city":
                     return JSONResponse(
                         status_code=400, 
-                        content={
-                            "internal_error_code": 1004,
-                            "error_message": "Invalid username."}
+                        content=ErrorResponse(
+                            internal_error_code=1004,
+                            error_message="Invalid username."
+                        ).model_dump()
                     )
                 if userParts[j] == "c":
                     if not cityParts:
                         return JSONResponse(
                             status_code=400, 
-                            content={
-                                "internal_error_code": 1003,
-                                "error_message": "Invalid username."}
+                            content=ErrorResponse(
+                                internal_error_code=1003,
+                                error_message="Invalid username."
+                            ).model_dump()
                         )
                     break
                 cityParts.append(userParts[j])
@@ -108,34 +113,30 @@ def auth_user(request: User, db: Session = Depends(get_db)):
 
     if not user:
         return JSONResponse(
-            status_code=401,
-            content={
-                "internal_error_code": 1002,
-                "error_message": "User not found."}
+            status_code=401, 
+            content=ErrorResponse(
+                internal_error_code=1002,
+                error_message="User not found."
+            ).model_dump()
         )
     if user.proxy_user_password != request.password:
         return JSONResponse(
-            status_code=401,
-            content={
-                "internal_error_code": 1001,
-                "error_message": "Invalid password."}
+            status_code=401, 
+            content=ErrorResponse(
+                internal_error_code=1001,
+                error_message="Invalid password."
+            ).model_dump()
         )
     
     #4. If it passes the checks then send the formatted context
 
-    return JSONResponse(
-        status_code=200,
-        content={
-            "context": {
-                "auth_service": {
-                    "proxy_user_id": user.proxy_user_id,
-                    "available_bandwidth": user.proxy_user_available_bandwidth,
-                    "residential_params": {
-                        "country": country,
-                        "city": city
-                    }
-                }
-            },
-            "available_bandwidth": user.proxy_user_available_bandwidth
-        }
+    return AuthResponse(
+        context=FullContext(
+            auth_service=AuthServiceContext(
+                proxy_user_id=user.proxy_user_id,
+                available_bandwidth=user.proxy_user_available_bandwidth,
+                residential_params=ResidentialParams(country=country, city=city)
+            )
+        ),
+        available_bandwidth=user.proxy_user_available_bandwidth
     )
